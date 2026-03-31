@@ -24,5 +24,10 @@ module.exports=async function(context,req){
     }
   }
 
-  context.res={body:{cards:result}};
+  context.res = {
+  headers: {
+    "Content-Type": "application/json; charset=utf-8"
+  },
+  body: JSON.stringify({ cards: result })
+  };
 };
