@@ -40,7 +40,8 @@ async function drawCards(){
       throw new Error("API error");
     }
 
-    const data = await res.json();
+    const text = await res.text();
+    const data = JSON.parse(text);
 
     // 🔊 เสียง
     document.getElementById("flipSound").play();
