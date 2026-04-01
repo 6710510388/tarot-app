@@ -27,8 +27,8 @@
     </script>
 
     <style>
-        /* Base styles - ลบ padding-bottom และ overflow-x: hidden ออก เพื่อใช้ Tailwind จัดการแทน */
-        body { background: radial-gradient(circle at center, #1e1135 0%, #0a0512 100%); color: #f3e8ff; min-height: 100vh; font-family: 'Prompt', sans-serif; }
+        /* Base styles */
+        body { background: radial-gradient(circle at center, #1e1135 0%, #0a0512 100%); color: #f3e8ff; min-height: 100vh; overflow-x: hidden; font-family: 'Prompt', sans-serif; padding-bottom: 120px;}
         .glass-panel { background: rgba(30, 17, 53, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(212, 175, 55, 0.2); }
         
         /* 3D Card Flip & Borders (ขอบไพ่สีทองของไพ่ขนาดใหญ่) */
@@ -42,14 +42,14 @@
         .card-front { background: url('./images/card-back.jpg') center/cover; }
         .card-back { transform: rotateY(180deg); background: #1e1135; display: flex; align-items: center; justify-content: center; }
 
-        /* แก้ไขขอบขาวและสัดส่วนของรูปภาพภายในไพ่ขนาดใหญ่ */
+        /* 🔥 แก้ไขจุดที่ 1: แก้ไขขอบขาวและสัดส่วนของรูปภาพภายในไพ่ขนาดใหญ่ */
         .card-back img { 
             width: 100%; 
             height: 100%; 
-            object-fit: cover; 
-            object-position: center; 
-            border-radius: 12px; 
-            background: none; 
+            object-fit: cover; /* เปลี่ยนจาก contain เป็น cover เพื่อให้รูปขยายเต็มพื้นที่ */
+            object-position: center; /* จัดให้อยู่กึ่งกลางเสมอ */
+            border-radius: 12px; /* เพิ่มมุมโค้งให้เข้ากับกรอบ */
+            background: none; /* ลบพื้นหลังสีขาวออก */
         }
 
         /* Progress Bar Animation */
@@ -60,10 +60,10 @@
         .mini-card { aspect-ratio: 2/3; background: url('./images/card-back.jpg') center/cover; border-radius: 4px; border: 1px solid rgba(212, 175, 55, 0.5); cursor: pointer; transition: 0.3s; }
         .mini-card:hover { transform: translateY(-5px) scale(1.1); box-shadow: 0 0 15px rgba(212, 175, 55, 0.8); }
 
-        /* แก้ไขสัดส่วนของ Mini-Card บนมือถือ */
+        /* 🔥 แก้ไขจุดที่ 2: แก้ไขสัดส่วนของ Mini-Card บนมือถือ */
         @media (max-width: 480px) {
             .deck-grid {
-                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); 
+                grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* เพิ่มความกว้างขั้นต่ำของ mini-card */
             }
         }
         
@@ -79,7 +79,7 @@
         </h1>
     </header>
 
-    <main class="container mx-auto px-4 py-6 pb-40 min-h-screen">
+    <main class="container mx-auto px-4 py-6 pb-24">
         
         <section id="screen-setup" class="flex flex-col items-center justify-center min-h-[70vh] animate-fade">
             <div class="glass-panel p-8 rounded-3xl w-full max-w-md text-center shadow-2xl border-t border-mystic-gold/40">
@@ -219,10 +219,11 @@
     <script>
         const colors = ["สีแดง (อำนาจ)", "สีทอง (ความรุ่งโรจน์)", "สีน้ำเงิน (ความสงบ)", "สีเขียว (ความสมบูรณ์)", "สีม่วง (ความลึกลับ)", "สีขาว (ความบริสุทธิ์)"];
         let typeWriters = []; 
-        let currentUserName = ""; 
+        let currentUserName = ""; // ตัวแปรเก็บชื่อเพื่อแยก Dashboard
 
         window.onload = () => {
             lucide.createIcons();
+            // หน้าแรกโหลดมา ให้เข้าหน้า Setup เสมอ (ตามที่คุณต้องการคือบังคับกรอกใหม่ตอนรีเฟรชเว็บเอง)
             switchScreen('setup'); 
         };
 
@@ -236,9 +237,11 @@
             activeScreen.classList.add('flex');
             window.scrollTo(0,0);
             
+            // ป้องกันไอคอนหายตอนสลับหน้า
             lucide.createIcons();
         }
 
+        // ฟังก์ชันกลับหน้าแรก
         function goHome() {
             if (currentUserName === "") {
                 switchScreen('setup');
@@ -248,6 +251,7 @@
             }
         }
 
+        // ฟังก์ชันเปิดไพ่ใบใหม่
         function newCard() {
             switchScreen('deck');
             renderDeck();
@@ -265,7 +269,7 @@
             }
             errorMsg.classList.add('hidden');
             
-            currentUserName = name; 
+            currentUserName = name; // บันทึกชื่อเพื่อใช้แยกประวัติ
             const zodiacText = zodiacDropdown.options[zodiacDropdown.selectedIndex].text.split(' - ')[0];
             
             document.getElementById('display-name').textContent = currentUserName;
@@ -287,11 +291,13 @@
         }
 
         async function drawCard() {
+    // เช็คว่ามีข้อมูลไพ่จากไฟล์ tarot-data.js ไหม
             if (typeof fullTarotDeck === 'undefined' || fullTarotDeck.length === 0) {
                 alert("ไม่พบฐานข้อมูลไพ่ กรุณาตรวจสอบไฟล์ tarot-data.js");
                 return;
             }
 
+    // สุ่มจากไพ่ทั้งหมดใน fullTarotDeck
             const result = fullTarotDeck[Math.floor(Math.random() * fullTarotDeck.length)];
             displayResult(result);
         }
@@ -360,6 +366,7 @@
 
         function saveToHistory(cardName, cardImg, score) {
             if (!currentUserName) return;
+            // แยกประวัติตามชื่อ (ตย. tarot_history_สมชาย)
             const dbKey = 'tarot_history_' + currentUserName;
             let history = JSON.parse(localStorage.getItem(dbKey) || '[]');
             history.unshift({ 
@@ -374,7 +381,7 @@
 
         function showHistory() {
             if (!currentUserName) {
-                alert("กรุณาระบุตัวตนเพื่อเข้าสู่ตำหนักพยากรณ์ก่อนค่ะ");
+                alert("กรุณาระบุตัวตนเพื่อเข้าสู่ตำหนักพยากรณ์ก่อนครับ");
                 return;
             }
 
@@ -416,6 +423,7 @@
             modal.classList.add('flex');
             setTimeout(() => content.classList.remove('translate-y-full'), 10);
 
+            // ป้องกันไอคอนประวัติหาย
             lucide.createIcons();
         }
 
@@ -429,6 +437,7 @@
             }, 300);
         }
 
+        // ระบบแชร์ที่เสถียรขึ้น (Native Share API สำหรับมือถือ / Copy Text สำหรับคอม)
         async function shareResult() {
             const cardName = document.getElementById('res-card-name').textContent;
             const score = document.getElementById('fortune-percent').textContent;
@@ -445,11 +454,12 @@
                     console.log("Share cancelled", err);
                 }
             } else {
+                // รองรับบนคอมพิวเตอร์ที่ไม่มี Share API
                 try {
                     await navigator.clipboard.writeText(textToShare + " " + window.location.href);
-                    alert("คัดลอกข้อความผลดวงแล้ว! สามารถนำไปกดวาง (Paste) เพื่อแชร์ได้เลยค่ะ");
+                    alert("คัดลอกข้อความผลดวงแล้ว! สามารถนำไปกดวาง (Paste) เพื่อแชร์ได้เลยครับ");
                 } catch (err) {
-                    alert("เบราว์เซอร์ไม่รองรับ กรุณาแคปหน้าจอเพื่อแชร์ค่ะ");
+                    alert("เบราว์เซอร์ไม่รองรับ กรุณาแคปหน้าจอเพื่อแชร์ครับ");
                 }
             }
         }
